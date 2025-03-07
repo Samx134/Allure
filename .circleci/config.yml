@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+ jira: circleci/jira@2.2.0 
+
 executors:
   python-executor:
     docker:
@@ -52,8 +55,13 @@ jobs:
           path: allure-results.zip
           destination: allure-results
 
+      - jira/notify:
+          pipeline_id: << pipeline.id >>
+          pipeline_number: << pipeline.number >>
+
 workflows:
   version: 2
   build_and_deploy:
     jobs:
       - build
+          context: $JIRA_WEBHOOK_URL
