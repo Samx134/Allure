@@ -22,6 +22,11 @@ jobs:
             pip install allure-pytest
             playwright install
 
+
+      - run:
+          name: Create allure results directory
+          command: mkdir -p allure-results
+
       - run:
           name: Run tests with Allure
           command: |
@@ -38,11 +43,6 @@ jobs:
           name: Generate Allure Report with History
           command: |
             npx allure generate allure-results --clean
-
-      - run:
-          name: Display Test Results
-          command: |
-            echo "テスト結果がallure-resultsディレクトリに出力されました。"
 
       - store_artifacts:
           path: allure-results
