@@ -50,7 +50,7 @@ def test_before_today(page: Page):
         page.screenshot(path="kadai_test1.png")
 
     #  確認
-        assert False
+        assert page.text_content("#date ~ div") == "翌日以降の日付を入力してください。", "日付エラーが出る事"
 
 
 #  ②名前が空の状態では予約できないこと。
