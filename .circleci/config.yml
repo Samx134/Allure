@@ -22,14 +22,10 @@ jobs:
             pip install allure-pytest
 
       - run:
-          name: Create tests directory
-          command: mkdir -p tests
-
-      - run:
           name: Run tests with Allure
           command: |
             . venv/bin/activate
-            pytest tests/ --alluredir=allure-results
+            pytest test_hotel_planisphere.py --alluredir=allure-results
 
       - run:
           name: Install Allure Commandline
