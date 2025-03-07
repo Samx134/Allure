@@ -40,48 +40,13 @@ jobs:
             npx allure generate allure-results --clean
 
       - run:
-          name: Install AWS CLI
+          name: Display Test Results
           command: |
-            . venv/bin/activate
-            sudo apt-get update
-            sudo apt-get install -y awscli
-
-      - run:
-          name: Configure AWS CLI
-          command: |
-            . venv/bin/activate
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-            aws configure set default.region eu-central-1
-
-      - run:
-          name: Define Timestamp
-          command: |
-            echo 'export TIMESTAMP=$(date +%Y%m%d%H%M%S)' >> $BASH_ENV
-
-      - run:
-          name: Upload New Allure Report to S3
-          command: |
-            . venv/bin/activate
-            UNIQUE_REPORT_DIR="build-$(echo $CIRCLE_BUILD_NUM)-${TIMESTAMP}"
-            aws s3 sync ./allure-report s3://your-bucket/allure-reports/$UNIQUE_REPORT_DIR --acl public-read
-
-      - run:
-          name: Update Latest Report Reference
-          command: |
-            . venv/bin/activate
-            aws s3 rm s3://your-bucket/allure-reports/latest --recursive
-            aws s3 cp --recursive ./allure-report s3://your-bucket/allure-reports/latest/
-            aws s3 cp --recursive ./allure-report/history s3://your-bucket/allure-reports/latest/history/
-
-      - run:
-          name: Display Allure Report URL
-          command: |
-            echo "Allure report is available at https://your-bucket.s3.eu-central-1.amazonaws.com/allure-reports/${UNIQUE_REPORT_DIR}/index.html" > allure-report-url.txt
+            echo "テスト結果がallure-resultsディレクトリに出力されました。"
 
       - store_artifacts:
-          path: allure-report-url.txt
-          destination: allure-report-url
+          path: allure-results
+          destination: allure-results
 
 workflows:
   version: 2
