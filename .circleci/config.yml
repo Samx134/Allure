@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Generate Allure Report with History
           command: |
-            npm allure generate allure-results --clean
+            npx allure generate allure-results --clean
 
       - run:
           name: Install AWS CLI
