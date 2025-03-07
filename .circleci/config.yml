@@ -32,7 +32,7 @@ jobs:
           name: Install Allure Commandline
           command: |
             . venv/bin/activate
-            npm install -g allure-commandline
+            npm install allure-commandline
 
       - run:
           name: Generate Allure Report with History
