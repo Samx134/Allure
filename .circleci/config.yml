@@ -22,7 +22,6 @@ jobs:
             pip install allure-pytest
             playwright install
 
-
       - run:
           name: Create allure results directory
           command: mkdir -p allure-results
@@ -44,8 +43,13 @@ jobs:
           command: |
             npx allure generate allure-results --clean
 
+      - run:
+          name: Zip allure results
+          command: |
+            zip -r allure-results.zip allure-results
+
       - store_artifacts:
-          path: allure-results
+          path: allure-results.zip
           destination: allure-results
 
 workflows:
