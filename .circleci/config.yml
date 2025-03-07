@@ -16,11 +16,6 @@ jobs:
       - checkout
 
       - run:
-          name: Send request to Jira
-          command: |
-            curl -X POST -H "Content-Type: application/json" -d '{}' $JIRA_WEBHOOK_URL
-
-      - run:
           name: Install dependencies
           command: |
             python -m venv venv
@@ -63,8 +58,8 @@ jobs:
       - jira/notify:
           pipeline_id: << pipeline.id >>
           pipeline_number: << pipeline.number >>
-
 workflows:
   build-workflow:
     jobs:
       - build:
+          context: https://128227a1-b1f0-4c2b-b7b6-1b32a1afee83.hello.atlassian-dev.net/x1/29qmPhOKqrZsAOmefp7UbrcFrbM
