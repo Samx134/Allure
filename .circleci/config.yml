@@ -1,58 +1,89 @@
 version: 2.1
-orbs:
-  browser-tools: circleci/browser-tools@1.5.2
-  jira: circleci/jira@2.2.0
-  allure: ayte/allure@0.1.3
-jobs:
-  build:
+
+executors:
+  python-executor:
     docker:
       - image: cimg/python:3.10.1-browsers
     working_directory: ~/repo
+
+jobs:
+  build:
+    executor: python-executor
     steps:
-      - browser-tools/install-browser-tools
       - checkout
 
       - run:
-          name: install dependencies
+          name: Install dependencies
           command: |
-            python3 -m venv venv
+            python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt
-            playwright install
+            pip install allure-pytest
 
       - run:
-        name: Create required directories
-        command: |
-          mkdir -p test-results/allure
-
-      - run:
-          name: Run test
+          name: Run tests with Allure
           command: |
             . venv/bin/activate
-            pytest test_hotel_planisphere.py -v --alluredir=test-results/allure
+            pytest tests/ --alluredir=allure-results
 
-      - allure/install:
-        version: "2.13.1"
+      - run:
+          name: Install Allure Commandline
+          command: |
+            . venv/bin/activate
+            npm install -g allure-commandline
 
-      - allure/report:
-        results-path: test-results/allure
-        target-path: allure-report
-        artifact-path: Report/Allure
+      - run:
+          name: Generate Allure Report with History
+          command: |
+            allure generate allure-results --clean
+
+      - run:
+          name: Install AWS CLI
+          command: |
+            . venv/bin/activate
+            apt-get update
+            apt-get install -y awscli
+
+      - run:
+          name: Configure AWS CLI
+          command: |
+            . venv/bin/activate
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set default.region eu-central-1
+
+      - run:
+          name: Define Timestamp
+          command: |
+            echo 'export TIMESTAMP=$(date +%Y%m%d%H%M%S)' >> $BASH_ENV
+
+      - run:
+          name: Upload New Allure Report to S3
+          command: |
+            . venv/bin/activate
+            UNIQUE_REPORT_DIR="build-$(echo $CIRCLE_BUILD_NUM)-${TIMESTAMP}"
+            aws s3 sync ./allure-report s3://your-bucket/allure-reports/$UNIQUE_REPORT_DIR --acl public-read
+
+      - run:
+          name: Update Latest Report Reference
+          command: |
+            . venv/bin/activate
+            aws s3 rm s3://your-bucket/allure-reports/latest --recursive
+            aws s3 cp --recursive ./allure-report s3://your-bucket/allure-reports/latest/
+            aws s3 cp --recursive ./allure-report/history s3://your-bucket/allure-reports/latest/history/
+
+      - run:
+          name: Display Allure Report URL
+          command: |
+            echo "Allure report is available at https://your-bucket.s3.eu-central-1.amazonaws.com/allure-reports/${UNIQUE_REPORT_DIR}/index.html" > allure-report-url.txt
 
       - store_artifacts:
-          path: allure-report
-          destination: Report/Allure
-
-      - store_test_results:
-          path: test-results
-
-      - jira/notify:
-          pipeline_id: << pipeline.id >>
-          pipeline_number: << pipeline.number >>
+          path: allure-report-url.txt
+          destination: allure-report-url
 
 workflows:
-  build-workflow:
+  version: 2
+  build_and_deploy:
     jobs:
-      - build:
-          context: $JIRA_WEBHOOK_URL
+      - build
