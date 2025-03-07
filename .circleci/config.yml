@@ -11,6 +11,7 @@ jobs:
     steps:
       - browser-tools/install-browser-tools
       - checkout
+
       - run:
           name: install dependencies
           command: |
@@ -19,23 +20,37 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
             playwright install
-      - run: mkdir -p test-reports
+
       - run:
-          name: run test
+        name: Create required directories
+        command: |
+          mkdir -p test-results/allure
+
+      - run:
+          name: Run test
           command: |
             . venv/bin/activate
-            pytest test_hotel_planisphere.py -v --alluredir=test-results/allure --junit-xml=test-results/results.xml --html=test-reports/report.html --self-contained-html
+            pytest test_hotel_planisphere.py -v --alluredir=test-results/allure
+
+      - allure/install:
+        version: "2.13.1"
+
       - allure/report:
         results-path: test-results/allure
         target-path: allure-report
+        artifact-path: Report/Allure
+
       - store_artifacts:
           path: allure-report
-          destination: allure-report
+          destination: Report/Allure
+
       - store_test_results:
           path: test-results
+
       - jira/notify:
           pipeline_id: << pipeline.id >>
           pipeline_number: << pipeline.number >>
+
 workflows:
   build-workflow:
     jobs:
