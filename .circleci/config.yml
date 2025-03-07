@@ -64,4 +64,4 @@ workflows:
   build_and_deploy:
     jobs:
       - build
-          context: JIRA_WEBHOOK_URL
+          context: https://128227a1-b1f0-4c2b-b7b6-1b32a1afee83.hello.atlassian-dev.net/x1/29qmPhOKqrZsAOmefp7UbrcFrbM
