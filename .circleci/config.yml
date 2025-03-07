@@ -20,6 +20,11 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
             pip install allure-pytest
+
+      - run:
+          name: Install Playwright Browsers
+          command: |
+            . venv/bin/activate
             playwright install
 
       - run:
